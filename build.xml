@@ -29,6 +29,7 @@
   <target name="clean">
     <delete file="${jarfile}"/>
     <delete dir="${build}"/>
+    <delete dir="dist"/>
   </target>
 
   <available property="dlclojure" file="vendor/clojure_1.0.0.zip"/>
@@ -48,7 +49,7 @@
 
   <available property="hasswank" file="lib/swank.jar"/>
   <target name="get-swank" unless="hasswank">
-    <get src="http://github.com/ato/swank-clojure/zipball/spring-hack"
+    <get src="http://github.com/ato/swank-clojure/zipball/master"
          dest="vendor/swank.zip"/>
     <mkdir dir="vendor/swank"/>
     <unzip src="vendor/swank.zip" dest="vendor/swank">
@@ -142,14 +143,29 @@
     </java>
   </target>
 
-  <target name="jar" description="Create jar files." depends="compile_clojure">
+  <target name="jar" description="Create jar files." depends="compile_classes">
     <jar jarfile="${jarfile}">
       <fileset dir="${src}" includes="**/*.clj"/>
-      <fileset dir="${build}" includes="**/*.class"/>
+      <fileset dir="${build}" includes="**/*.class" 
+               excludes="swank/**"/>
       <manifest>
         <attribute name="Class-Path" value="."/>
       </manifest>
     </jar>
+  </target>
+
+
+  <target name="dist" depends="jar">
+    <mkdir dir="dist/clojai/0.1"/>
+    <copy file="${jarfile}" tofile="dist/clojai/0.1/SkirmishAI.jar"/>
+    <copy todir="dist/clojai/0.1"><fileset dir="data"/></copy>
+    <copy todir="dist/clojai/0.1/jlib"><fileset dir="lib"/></copy>
+  </target>
+
+  <target name="install" depends="dist">    
+    <copy todir="${user.home}/.spring/AI/Skirmish">
+      <fileset dir="dist"/>
+    </copy> 
   </target>
 
 </project>

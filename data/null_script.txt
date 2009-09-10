@@ -1,0 +1,111 @@
+[GAME]
+{
+	HostIP=localhost;
+	HostPort=8452;
+	IsHost=1;
+	MyPlayerName=UnnamedPlayer;
+
+	ModHash=355337693;
+	MapHash=2807001915;
+	Mapname=Geyser_Plains_TNM04-V3.smf;
+	GameType=Balanced Annihilation V7.01;
+
+	startpostype=3;
+	[mapoptions]
+	{
+	}
+	[modoptions]
+	{
+		diminishingmms=0;
+		disablemapdamage=0;
+		fixedallies=0;
+		ghostedbuildings=1;
+		limitdgun=0;
+		mo_comgate=0;
+		mo_coop=0;
+		mo_enemywrecks=1;
+		mo_greenfields=0;
+		mo_noowner=0;
+		mo_noshare=1;
+		mo_nowrecks=0;
+		mo_preventdraw=1;
+		maxspeed=3;
+		maxunits=500;
+		minspeed=0.3;
+		startenergy=1000;
+		startmetal=1000;
+		deathmode=com;
+		gamemode=0;
+	}
+	NumRestrictions=0;
+	[RESTRICT]
+	{
+	}
+
+	NumPlayers=1;
+	NumUsers=3;
+
+	[PLAYER2]
+	{
+		Name=UnnamedPlayer;
+		CountryCode=;
+		Spectator=0;
+		Rank=0;
+		IsFromDemo=0;
+		Team=0;
+	}
+	[AI0]
+	{
+		Name=Bot1;
+		ShortName=ClojAI;
+		Version=0.1;
+		Team=0;
+		IsFromDemo=0;
+		Host=2;
+		[Options]
+		{
+		}
+	}
+	[AI1]
+	{
+		Name=Bot2;
+		ShortName=NullAI;
+		Version=0.1;
+		Team=1;
+		IsFromDemo=0;
+		Host=2;
+		[Options]
+		{
+		}
+	}
+
+	[TEAM0]
+	{
+		TeamLeader=2;
+		StartPosX=655;
+		StartPosZ=2017;
+		AllyTeam=0;
+		RGBColor=1 0 0;
+		Side=ARM;
+		Handicap=0;
+	}
+	[TEAM1]
+	{
+		TeamLeader=2;
+		StartPosX=3700;
+		StartPosZ=2000;
+		AllyTeam=1;
+		RGBColor=0.670588 0.34902 0.882353;
+		Side=ARM;
+		Handicap=0;
+	}
+
+	[ALLYTEAM0]
+	{
+		NumAllies=0;
+	}
+	[ALLYTEAM1]
+	{
+		NumAllies=0;
+	}
+}

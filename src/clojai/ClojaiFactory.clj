@@ -1,10 +1,13 @@
 (ns clojai.ClojaiFactory
   (:import (com.springrts.ai.oo OOAIFactory AbstractOOAI))
   (:use clojai swank.swank)
+  (:require clojure.main)
   (:gen-class
    :extends com.springrts.ai.oo.OOAIFactory))
 
 (def swank-running? (atom nil))
+
+(def ai-instances (atom []))
 
 (defn -createAI [this team-id cb]
   (println (str "ClojaiFactory/-createAI called for team " team-id 
@@ -23,9 +26,13 @@
   ;; we fire up swank with do-event so that the REPL
   ;; has access to our globals and can inspect the first AI
   (when-not @swank-running?
-    (do-event #(do
-                 (swank.swank/start-server "/dev/null" :port 4005)))
+    (do-event #(clojure.main/with-bindings
+                 (swank.swank/ignore-protocol-version "2008-12-09")
+                 (swank.swank/start-server "/dev/null" :port 4005
+                                           :encoding "iso-latin-1-unix")))
     (reset! swank-running? true))
+
+  (swap! ai-instances conj cb)
 
   ;;
   ;; proxy all the events
