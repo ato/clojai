@@ -6,11 +6,22 @@ This is the start of a Spring RTS AI written in Clojure.
 Compiling
 ---------
 
-Install JDK 5 (or later) and Apache Ant.  Extract clojure-1.0.0.jar from this
-zip:
+Install JDK 5 (or later) and Apache Ant 1.4 (or later).
 
-  http://clojure.googlecode.com/files/clojure_1.0.0.zip
+Then compile with:
 
-Compile with:
+  ant
 
-  ant -Dclojure.jar=.../clojure-1.0.0.jar
+Dependencies will be downloaded and compiled as necessary.
+
+Interactive Development with SLIME
+----------------------------------
+
+ClojAI will attempt to start a swank server listening on port 4005.
+So if you have a Clojure development environment with SLIME setup in
+Emacs you can connect to it with:
+
+  M-x slime-connect <return> 127.0.0.1 <return> 4005 <return>
+
+The Spring AI interface callback object should be available as
+clojai/*cb*.

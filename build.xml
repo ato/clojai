@@ -1,7 +1,24 @@
 <project name="clojai" default="jar">
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
+
+  <property name="clojure.jar" location="lib/clojure-1.0.0.jar"/>
   <available property="hasclojure" file="${clojure.jar}"/>
+
+
+  <property name="spring-java" location="/usr/local/lib/spring/AI/Interfaces/Java/0.1"/>
+  <property name="AIInterface.jar" location="${spring-java}/AIInterface.jar"/>
+  <property name="jna.jar" location="${spring-java}/jlib/jna.jar"/>
+  <property name="vecmath.jar" location="${spring-java}/jlib/vecmath.jar"/>
+
+  <condition property="hasaiinterface">
+    <and>
+      <available file="${AIInterface.jar}"/>
+      <available file="${jna.jar}"/>
+      <available file="${vecmath.jar}"/>
+    </and>
+  </condition>
+
   <property name="jarfile" location="clojai.jar"/>
 
   <target name="init">
@@ -14,6 +31,54 @@
     <delete dir="${build}"/>
   </target>
 
+  <available property="dlclojure" file="vendor/clojure_1.0.0.zip"/>
+  <target name="get-clojure" unless="dlclojure">
+    <mkdir dir="vendor"/>
+    <get src="http://clojure.googlecode.com/files/clojure_1.0.0.zip"
+         dest="vendor/clojure_1.0.0.zip"/>
+  </target>
+
+  <target name="unpack-clojure" unless="hasclojure" depends="get-clojure">
+    <mkdir dir="lib"/>
+    <unzip src="vendor/clojure_1.0.0.zip" dest="lib">
+      <patternset><include name="clojure-1.0.0.jar"/></patternset>
+    </unzip>
+    <property name="hasclojure" value="true"/>
+  </target>
+
+  <available property="hasswank" file="lib/swank.jar"/>
+  <target name="get-swank" unless="hasswank">
+    <get src="http://github.com/ato/swank-clojure/zipball/spring-hack"
+         dest="vendor/swank.zip"/>
+    <mkdir dir="vendor/swank"/>
+    <unzip src="vendor/swank.zip" dest="vendor/swank">
+      <!-- strip the top-level directory -->
+      <mapper type="regexp" from="^[^/\\]*[/\\](.*)$$" to="\1"/>
+    </unzip>
+    <jar basedir="vendor/swank" destfile="lib/swank.jar"/>
+  </target>
+
+  <available property="hascontrib" file="lib/clojure-contrib.jar"/>
+  <target name="get-contrib" unless="hascontrib">
+    <get src="http://github.com/richhickey/clojure-contrib/zipball/clojure-1.0-compatible"
+         dest="vendor/clojure-contrib.zip"/>
+
+    <mkdir dir="vendor/clojure-contrib"/>
+    <unzip src="vendor/clojure-contrib.zip" dest="vendor/clojure-contrib">
+      <!-- strip the top-level directory -->
+      <mapper type="regexp" from="^[^/\\]*[/\\](.*)$$" to="\1"/>
+    </unzip>
+
+    <ant dir="vendor/clojure-contrib" inheritAll="false">
+      <property name="clojure.jar" value="../../lib/clojure-1.0.0.jar"/>
+    </ant>
+
+    <copy file="vendor/clojure-contrib/clojure-contrib.jar" todir="lib"/>
+  </target>
+
+
+  <target name="get-libs" depends="unpack-clojure,get-swank,get-contrib" />
+
   <target name="check_hasclojure"
           description="Print a warning message if clojure.jar is undefined"
           unless="hasclojure">
@@ -25,21 +90,41 @@
     <fail/>
   </target>
 
-  <target name="compile_classes" depends="init,check_hasclojure"
+  <target name="check_hasaiinterface"
+          description="Print a warning message if AIInterface.jar is undefined"
+          unless="hasaiinterface">
+    <echo>ERROR: You have not defined a path to Spring's AIInterface.jar so 
+       I can't compile files.  Note that jna.jar and vecmath.jar 
+       should also be in the jlibs subdirectory.
+
+       Typically the path should be something like:
+
+         /usr/local/lib/spring/AI/Interface/Java/0.1
+
+       To fix this, run "ant -Dspring-java=&lt;...path to AIInterface.jar..&gt;"
+    </echo>
+    <fail/>
+  </target>
+
+  <target name="compile_classes" depends="init,get-libs,check_hasclojure,check_hasaiinterface"
           description="Compile the clojure files that have gen-class."
           if="hasclojure">
-    <java classname="clojure.lang.Compile">
+    <java classname="clojure.lang.Compile" failonerror="true">
       <classpath>
         <path location="${build}"/>
         <path location="${src}"/>
         <path location="${clojure.jar}"/>
+        <path location="${AIInterface.jar}"/>
+        <path location="${jna.jar}"/>
+        <path location="${vecmath.jar}"/>
+        <path location="lib/swank.jar"/>
       </classpath>
       <sysproperty key="clojure.compile.path" value="${build}"/>
       <arg value="clojai.ClojaiFactory"/>
     </java>
   </target>
 
-  <target name="compile_clojure" depends="init,check_hasclojure"
+  <target name="compile_clojure" depends="init,compile_classes"
           description="Compile Clojure sources."
           if="hasclojure">
     <java classname="clojure.lang.Compile">
@@ -47,6 +132,8 @@
         <path location="${build}"/>
         <path location="${src}"/>
         <path location="${clojure.jar}"/>
+        <path location="${AIInterface.jar}"/>
+        <path location="lib/swank.jar"/>
       </classpath>
       <sysproperty key="clojure.compile.path" value="${build}"/>
       <sysproperty key="java.awt.headless" value="true"/> <!--
