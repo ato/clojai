@@ -2,3 +2,15 @@ ClojAI
 ======
 
 This is the start of a Spring RTS AI written in Clojure.
+
+Compiling
+---------
+
+Install JDK 5 (or later) and Apache Ant.  Extract clojure-1.0.0.jar from this
+zip:
+
+  http://clojure.googlecode.com/files/clojure_1.0.0.zip
+
+Compile with:
+
+  ant -Dclojure.jar=.../clojure-1.0.0.jar
