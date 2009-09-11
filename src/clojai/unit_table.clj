@@ -9,7 +9,8 @@
         metal (first (filter #(= "Metal" (.getName %)) (.getResources cb)))
         energy (first (filter #(= "Energy" (.getName %)) (.getResources cb)))]
     [(keyword (.getName unit))
-     {:model (keyword (.getName unit))
+     {:spring-unit-def unit
+      :model (keyword (.getName unit))
       :human-name (.getHumanName unit)
 
       :speed  (.getSpeed unit)

@@ -119,6 +119,7 @@
         <path location="${jna.jar}"/>
         <path location="${vecmath.jar}"/>
         <path location="lib/swank.jar"/>
+        <path location="lib/clojure-contrib.jar"/>
       </classpath>
       <sysproperty key="clojure.compile.path" value="${build}"/>
       <arg value="clojai.ClojaiFactory"/>
@@ -135,6 +136,7 @@
         <path location="${clojure.jar}"/>
         <path location="${AIInterface.jar}"/>
         <path location="lib/swank.jar"/>
+        <path location="lib/clojure-contrib.jar"/>
       </classpath>
       <sysproperty key="clojure.compile.path" value="${build}"/>
       <sysproperty key="java.awt.headless" value="true"/> <!--
@@ -146,8 +148,10 @@
   <target name="jar" description="Create jar files." depends="compile_classes">
     <jar jarfile="${jarfile}">
       <fileset dir="${src}" includes="**/*.clj"/>
-      <fileset dir="${build}" includes="**/*.class" 
-               excludes="swank/**"/>
+      <fileset dir="${build}" includes="**/*.class"> 
+         <exclude name="swank/**"/>
+         <exclude name="clojure-contrib/**"/>
+      </fileset>
       <manifest>
         <attribute name="Class-Path" value="."/>
       </manifest>
