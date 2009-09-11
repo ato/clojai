@@ -5,3 +5,5 @@ clojai.jar
 *.swp
 dist
 *~
+*#
+.#*

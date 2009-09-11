@@ -1,4 +1,9 @@
-(ns clojai.ClojaiFactory
+(ns 
+    #^{:doc "Implements the OOAIFactory interface to satisify the
+Spring Java API.  Doesn't actually contain much logic itself, it just
+proxies everything over over to clojai so that we can patch code at
+runtime."}
+  clojai.ClojaiFactory
   (:import (com.springrts.ai.oo OOAIFactory AbstractOOAI))
   (:use clojai swank.swank)
   (:require clojure.main)
@@ -13,50 +18,47 @@
   (println (str "ClojaiFactory/-createAI called for team " team-id 
                 "  with cb " cb))
 
-  ;;
-  ;; so that we don't have to thread them through everywhere
-  ;; we (abuse?) the binding macro to create some per-AI "globals"
-  ;;
-  (defn do-event [fn]
-    (binding [*cb* cb
-              *ai* {:callback cb}]
-      (fn))
-    0)                  ; return zero to say we've processed the event
-    
   ;; we fire up swank with do-event so that the REPL
   ;; has access to our globals and can inspect the first AI
   (when-not @swank-running?
-    (do-event #(clojure.main/with-bindings
-                 (swank.swank/ignore-protocol-version "2008-12-09")
-                 (swank.swank/start-server "/dev/null" :port 4005
-                                           :encoding "iso-latin-1-unix")))
+    (clojure.main/with-bindings
+      (swank.swank/ignore-protocol-version "2008-12-09")
+      (swank.swank/start-server "/dev/null" :port 4005
+                                :encoding "iso-latin-1-unix"))
     (reset! swank-running? true))
 
-  (swap! ai-instances conj cb)
+  (let [ai (atom (create-ai cb))]
+    (swap! ai-instances conj [ai cb])
 
-  ;;
-  ;; proxy all the events
-  ;;
-  (proxy [AbstractOOAI] []
-    (update
-     [frame]
-     (do-event #(on-update frame)))
-    (message
-     [player message]
-     (do-event #(on-message player message)))
-    (unitCreated 
-     [unit builder]
-     (do-event #(on-unit-created unit builder)))
-    (unitFinished
-     [unit]
-     (do-event #(on-unit-finished unit)))
-    (unitIdle
-     [unit]
-     (do-event #(on-unit-idle unit)))
-    (unitDamaged
-     [unit attacker damage dir weapon-def paralyzed?]
-     (do-event #(on-unit-damaged unit attacker damage dir weapon-def paralyzed?)))
-    (unitDestroyed
-     [unit attacker]
-     (do-event #(on-unit-destroyed unit attacker)))
-    ))
+    ;;
+    ;; proxy all the events
+    ;;
+    (proxy [AbstractOOAI] []
+      (update
+       [frame]
+       (swap! ai on-update cb frame)
+       0)
+      (message
+       [player message]
+       (swap! ai on-message cb player message)
+       0)
+      (unitCreated 
+       [unit builder]
+       (swap! ai on-unit-created cb unit builder)
+       0)
+      (unitFinished
+       [unit]
+       (swap! ai on-unit-finished cb unit)
+       0)
+      (unitIdle
+       [unit]
+       (swap! ai on-unit-idle cb unit)
+       0)
+      (unitDamaged
+       [unit attacker damage dir weapon-def paralyzed?]
+       (swap! ai on-unit-damaged cb unit attacker damage dir
+              weapon-def paralyzed?)
+       0)
+      (unitDestroyed
+       [unit attacker]
+       (swap! ai on-unit-destroyed cb unit attacker) 0))))
