@@ -37,28 +37,36 @@ runtime."}
       (update
        [frame]
        (swap! ai on-update cb frame)
+       (assert @ai)
        0)
       (message
        [player message]
        (swap! ai on-message cb player message)
+       (assert @ai)
        0)
       (unitCreated 
        [unit builder]
        (swap! ai on-unit-created cb unit builder)
+       (assert @ai)
        0)
       (unitFinished
        [unit]
        (swap! ai on-unit-finished cb unit)
+       (assert @ai)
        0)
       (unitIdle
        [unit]
        (swap! ai on-unit-idle cb unit)
+       (assert @ai)
        0)
       (unitDamaged
        [unit attacker damage dir weapon-def paralyzed?]
        (swap! ai on-unit-damaged cb unit attacker damage dir
               weapon-def paralyzed?)
+       (assert @ai)
        0)
       (unitDestroyed
        [unit attacker]
-       (swap! ai on-unit-destroyed cb unit attacker) 0))))
+       (swap! ai on-unit-destroyed cb unit attacker) 
+       (assert @ai)
+       0))))

@@ -4,10 +4,13 @@
    (com.springrts.ai.oo UnitDef))
   (:use clojure.set))
 
+(defn res-by-name [cb name]
+  (first (filter #(= name (.getName %)) (.getResources cb))))
+
 (defn- create-table-entry [#^AICallback cb #^UnitDef unit]
   (let [plant? (.contains (.getCategoryString unit) " PLANT ")
-        metal (first (filter #(= "Metal" (.getName %)) (.getResources cb)))
-        energy (first (filter #(= "Energy" (.getName %)) (.getResources cb)))]
+        metal (res-by-name cb "Metal")
+        energy (res-by-name cb "Energy")]
     [(keyword (.getName unit))
      {:spring-unit-def unit
       :model (keyword (.getName unit))
@@ -41,7 +44,8 @@
 
       :tags
       (disj 
-       #{(when (pos? (.getSpeed unit))   :mobile)
+       #{(keyword (.getName unit))
+         (when (pos? (.getSpeed unit))   :mobile)
          (when (zero? (.getSpeed unit))  :building)
          (when (.isCommander unit)       :commander)
 
@@ -93,6 +97,8 @@
          (when plant? :plant)
          (when (.isAirBase unit) :airbase)
 
+         (when (pos? (.getExtractsResource unit metal)) :mex)
+
          } nil)}]))
 
 
@@ -126,4 +132,4 @@
 
   (time
    (apply merge-with union
-          (map tag-map unit-table))))
+          (map (comp tag-map second) unit-table))))
