@@ -5,7 +5,7 @@ proxies everything over over to clojai so that we can patch code at
 runtime."}
   clojai.ClojaiFactory
   (:import (com.springrts.ai.oo OOAIFactory AbstractOOAI))
-  (:use clojai swank.swank)
+  (:use clojai swank.swank clojai.gui)
   (:require clojure.main)
   (:gen-class
    :extends com.springrts.ai.oo.OOAIFactory))
@@ -28,6 +28,7 @@ runtime."}
     (reset! swank-running? true))
 
   (let [ai (atom (create-ai cb))]
+    (reset! ai (assoc @ai :gui (show-gui ai)))
     (swap! ai-instances conj [ai cb])
 
     ;;

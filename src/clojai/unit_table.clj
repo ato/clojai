@@ -21,6 +21,8 @@
       :max-slope (.getMaxSlope unit)
       :weapon-range (.getMaxWeaponRange unit)
 
+      :power (.getPower unit)
+
       :los-radius (.getLosRadius unit)
       :radar-radius (.getRadarRadius unit)
       :sonar-radius (.getSonarRadius unit)

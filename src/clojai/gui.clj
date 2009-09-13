@@ -1,4 +1,4 @@
-(ns clojure.gui
+(ns clojai.gui
   (:import (javax.swing JFrame JLabel JTextField JButton JPanel)
            (java.awt.event ActionListener)
            (java.awt GridLayout Dimension Graphics Color Graphics2D)

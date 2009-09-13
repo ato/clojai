@@ -25,6 +25,7 @@
             :radar-map  (-> cb .getMap .getRadarMap vec)
             :jammer-map (-> cb .getMap .getJammerMap vec)
             :los-map (-> cb .getMap .getLosMap vec)
+
             }]
     ai))
 
@@ -96,21 +97,11 @@
     (reduce #(on-unit-finished %1 cb %2) ai (.getTeamUnits cb))))
 
 ;;;;;;;;;;;; EVENTS ;;;;;;;;;;;;;
-  
-(comment
-  :slope-map  (-> cb .getMap .getSlopeMap vec)
-  :height-map (-> cb .getMap .getHeightMap vec)
-  :radar-map  (-> cb .getMap .getRadarMap vec)
-  :jammer-map (-> cb .getMap .getJammerMap vec)
-  :los-map) (-> cb .getMap .getLosMap vec)
-
-(use 'clojai.gui)
-(def gui (show-gui aia))
 
 (defn update-maps [ai #^OOAIFactory cb frame]
   (if (zero? (mod frame 32))
     (do 
-      (.repaint gui)
+      (.repaint (ai :gui))
       (assoc ai :los-map (-> cb .getMap .getLosMap vec)))
     
     ai))
