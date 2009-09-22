@@ -1,10 +1,12 @@
-(ns clojai.unit-table
+(ns clojai.model
   (:import 
    (com.springrts.ai AICallback)
    (com.springrts.ai.oo UnitDef))
   (:use clojure.set))
 
-(defn res-by-name [cb name]
+(set! *warn-on-reflection* true)
+
+(defn res-by-name [#^AICallback cb name]
   (first (filter #(= name (.getName %)) (.getResources cb))))
 
 (defn- create-table-entry [#^AICallback cb #^UnitDef unit]
@@ -114,8 +116,8 @@
           (map (fn [[n a]] 
                  (into {} (map #(vector % #{n}) (:build-options a))))
                                            unit-map))))
-(defn create-unit-table
-  [cb]
+(defn create-models
+  [#^AICallback cb]
   (println "ClojAI: loading unit definitions...")
   (time (update-built-by 
          (reduce (fn [s u] (conj s (create-table-entry cb u))) 
@@ -135,3 +137,9 @@
   (time
    (apply merge-with union
           (map (comp tag-map second) unit-table))))
+
+(defn get-model
+  "Given a spring unit object returns our model map of it."
+  [ai s-unit]
+  (let [model-id (-> s-unit .getDef .getName keyword)]
+    (-> ai :unit-table model-id)))

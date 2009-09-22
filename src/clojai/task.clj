@@ -1,5 +1,5 @@
 (ns clojai.task
-  (:use (clojai spring command))
+  (:use (clojai spring command map))
   (:import (com.springrts.ai.command SendTextMessageAICommand
                                      BuildUnitAICommand
                                      MoveUnitAICommand
@@ -33,11 +33,11 @@
   (assert text)
   (list (SendTextMessageAICommand. text 0)))
 
-; (def ai @(first (first @clojai.ClojaiFactory/ai-instances)))
+; (def ai (first (first @clojai.ClojaiFactory/ai-instances)))
 ; (def cb (second (first @clojai.ClojaiFactory/ai-instances)))
 
 ; (execute! ai cb {:task :chat :text "Hello"})
-;  (execute! ai cb {:task :build :unit :armcom-404 :to-build :armmex})
+; (execute! ai cb {:task :build :unit :armcom-404 :to-build :armmex})
 ; (execute! ai cb {:task :build, :unit :armcom-404, :to-build :armmex})
 
 (defn execute!
@@ -49,4 +49,38 @@
          cmd (to-commands ai cb task)]
      (execute-command! cb cmd))))
 
-
+(defn choose-task
+  "Initial hard-coded task chooser.  Will be updated later
+  to something more sophisticated."
+  [ai unit]
+  (cond
+    ;--- Commander ---
+    (-> unit :tags :commander)      
+    (cond
+      (< (count (-> ai :team-units-by-tag :mex)) 2)
+      {:task :build
+       :unit (unit :id)
+       :to-build (first (filter 
+                         (comp :mex :tags (ai :unit-table))
+                         (unit :build-options)))
+       :pos (closest-avail-metal-spot ai (unit :pos))}
+      
+      (< (count (-> ai :team-units-by-tag :armsolar)) 2)
+      {:task :build
+       :unit (unit :id)
+       :to-build :armsolar}
+      
+      (< (count (-> ai :team-units-by-tag :armllt)) 1)
+      {:task :build
+       :unit (unit :id)
+       :to-build :armllt}
+      
+      (< (count (-> ai :team-units-by-tag :armlab)) 1)
+      {:task :build
+       :unit (unit :id)
+       :to-build :armlab})
+    ;--- Lab ---
+    (-> unit :tags :armlab)
+    {:task :build
+     :unit (unit :id)
+     :to-build :armflea}))

@@ -28,7 +28,6 @@ runtime."}
     (reset! swank-running? true))
 
   (let [ai (atom (create-ai cb))]
-    (reset! ai (assoc @ai :gui (show-gui ai)))
     (swap! ai-instances conj [ai cb])
 
     ;;

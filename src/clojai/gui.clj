@@ -1,4 +1,5 @@
 (ns clojai.gui
+  (:use clojai.map)
   (:import (javax.swing JFrame JLabel JTextField JButton JPanel)
            (java.awt.event ActionListener)
            (java.awt GridLayout Dimension Graphics Color Graphics2D)
@@ -12,9 +13,10 @@
         (.setSample raster x y (int 0) (int (f (int (v (+ (* y w) x)))))
 )))))
 
-(defn create-map-panel [ai-atom mapkey w h f]
+(defn create-grid-panel [grid f]
   "Create a panel with a customised render"
-  (let [image (BufferedImage. w h BufferedImage/TYPE_BYTE_GRAY)
+  (let [[w h] (grid-size @grid)
+        image (BufferedImage. w h BufferedImage/TYPE_BYTE_GRAY)
         oldmap (atom nil)
         panel (proxy [JPanel] []
                 (getPreferredSize [] (Dimension. w h))
@@ -23,32 +25,36 @@
                  [g]
                  (proxy-super paintComponent g)
 
-                 (let [newmap (@ai-atom mapkey)]
+                 (let [newmap @grid]
                    (when (not= @oldmap newmap)
-                     (println mapkey)
                      (time (vec-to-raster! newmap
                                            (.getRaster image) f))
                      (reset! oldmap newmap)))
 
                  (.drawImage g image 0 0 nil)))]
+    (println "Added" w "x" h "grid")
+    (add-watch grid panel (fn [_ _ _ _] (.repaint panel)))
     panel))
 
-(defn show-gui [ai-atom]
+(defn show-gui [ai]
   (let [frame (JFrame. "ClojAI")
-        panel (JPanel.)
-        [w h] (@ai-atom :map-size)]
+        panel (JPanel.)]
     (doto panel
-      (.add (create-map-panel ai-atom :height-map w h
-                              identity))
-      (.add (create-map-panel ai-atom :los-map (/ w 4) (/ h 4)
-                              #(if (pos? %) 127 0)))
-      (.add (create-map-panel ai-atom :radar-map (/ w 8) (/ h 8)
-                              #(if (pos? %) 127 0)))
-      (.add (create-map-panel ai-atom :jammer-map (/ w 8) (/ h 8)
-                              #(if (pos? %) 127 0))))
+      (.add (create-grid-panel (-> ai :grids :height) identity))
+      (.add (create-grid-panel (-> ai :grids :defence) identity))
+      (.add (create-grid-panel (-> ai :grids :threat) identity)))
 
     (doto frame
       (.add panel)
-      (.setSize 640 400)
+      (.setSize 1000 1000)
       (.setVisible true)
       )))
+
+;(show-gui @clojai/*ai)
+;(apply + (-> @clojai/*ai :grids :defence (deref)))
+;
+
+;(send (-> @clojai/*ai :grids :defence) update-grid)
+
+
+
