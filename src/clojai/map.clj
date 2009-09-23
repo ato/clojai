@@ -1,4 +1,5 @@
 (ns clojai.map
+  (:use clojai (clojai model))
   (:import (com.springrts.ai.oo OOAIFactory AbstractOOAI)))
 
 (defn dist2d2
@@ -29,34 +30,27 @@
 (defn get-metal-spots
   "Returns a set of positions of resource spots on the map."
   [cb]
-  ;(-> cb .getMap (.getResourceMapSpotsPositions 
-                                        ;                  (res-by-name cb "Metal")) set)
-  #{}
-)
+  (-> cb .getMap (.getResourceMapSpotsPositions 
+                  (res-by-name cb "Metal")) set))
 
-(defn closest-metal-spot
-  "Returns the metal spot closest to pos."
-  [ai pos]
-  (apply min-key #(dist2d2 pos %) (ai :metal-spots)))
-
-(defn closest-avail-metal-spot
-  "Returns the available metal spot closest to pos."
-  [ai pos]
-  (apply min-key #(dist2d2 pos %) (ai :avail-metal-spots)))
+(defn closest
+  "Chooses the closes spot to position."
+  [pos spots]
+  (when-not (empty? spots)
+    (apply min-key #(dist2d2 pos %) spots)))
 
 
 (defn add-mex
   "Mark a metal extractor as being at pos."
   [ai pos]
-  (update-in ai [:avail-metal-spots] 
-             disj (closest-metal-spot ai pos)))
+  (alter (ai :avail-metal-spots)
+             disj (closest pos (ai :metal-spots))))
 
 (defn del-mex
   "Mark a metal extractor as no longer being at pos."
   [ai pos]
-  (update-in ai [:avail-metal-spots] 
-             conj (closest-metal-spot ai pos)))
-
+  (alter (ai :avail-metal-spots) 
+             conj (closest pos (ai :metal-spots))))
 
 (defn circle-fill-seq
   "Returns a seq of all the (integer) points within a circle of radius

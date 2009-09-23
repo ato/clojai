@@ -19,8 +19,8 @@
 
 (defmethod to-commands :build 
   [ai cb {unit :unit to-build :to-build pos :pos}]
-  (let [s-unit (-> ai :team-units unit :spring-unit)
-        s-unit-def (-> ai :unit-table to-build :spring-unit-def)]
+  (let [s-unit ((unit-by-id ai unit) :spring-unit)
+        s-unit-def (-> ai :models to-build :spring-unit-def)]
     (assert s-unit)
     (assert s-unit-def)
 
@@ -36,18 +36,18 @@
 ; (def ai (first (first @clojai.ClojaiFactory/ai-instances)))
 ; (def cb (second (first @clojai.ClojaiFactory/ai-instances)))
 
-; (execute! ai cb {:task :chat :text "Hello"})
+; (execute! *ai* {:task :chat :text "Hello"})
 ; (execute! ai cb {:task :build :unit :armcom-404 :to-build :armmex})
 ; (execute! ai cb {:task :build, :unit :armcom-404, :to-build :armmex})
 
 (defn execute!
   "Immediately executes a task."
-  [ai cb & tasks]
+  [ai & tasks]
   (println "Executing: " tasks)
   (dorun 
    (for [task tasks
-         cmd (to-commands ai cb task)]
-     (execute-command! cb cmd))))
+         cmd (to-commands ai (ai :cb) task)]
+     (execute-command! (ai :cb) cmd))))
 
 (defn choose-task
   "Initial hard-coded task chooser.  Will be updated later
@@ -63,8 +63,7 @@
        :to-build (first (filter 
                          (comp :mex :tags (ai :models))
                          (unit :build-options)))
-       ;:pos (closest-avail-metal-spot ai (unit :pos))
-       }
+       :pos (closest (unit :pos) @(ai :avail-metal-spots))}
       
       (< (count (units-by-tag ai :armsolar)) 2)
       {:task :build
@@ -87,6 +86,6 @@
      :to-build :armflea}))
 
 
-; (choose-task *ai* (first (units-by-tag *ai* :commander)))
+; (execute! *ai* (choose-task *ai* (first (units-by-tag *ai* :commander))))
 ; (use 'clojure.contrib.pprint)
 ; (

@@ -64,4 +64,7 @@
   ([ai kw tag]
      (filter #((% :tags) tag) (vals @((ai :units) kw)))))
 
-
+(defn unit-by-id
+  "Convenience function for returning a unit with a particular id."
+  ([ai id] (unit-by-id ai :team id))
+  ([ai kw id] (@((ai :units) kw) id)))

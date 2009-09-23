@@ -16,7 +16,10 @@
             :resources (create-resources cb)
             :models models
             :units units
-            :grids (create-grids cb units)}]
+            :grids (create-grids cb units)
+
+            :metal-spots metal-spots
+            :avail-metal-spots (ref metal-spots)}]
     (assoc ai :gui (show-gui ai))))
 
 (defn destroy-ai [ai]
@@ -29,6 +32,28 @@
 
 (defn on-release [ai reason]
   (destroy-ai ai))
+
+(defn on-unit-created [ai spring-unit spring-builder]
+  (let [builder (unit-name spring-builder)
+        unit (assoc (create-unit spring-unit (ai :models)) 
+               :builder builder)
+        id (unit :id)]
+    (dosync
+     (alter ((ai :units) :team) assoc id unit)
+     (when ((unit :tags) :mex)
+       (add-mex ai (unit :pos))))))
+
+(defn on-unit-destroyed [ai spring-unit spring-attacker]
+  (let [id (unit-name spring-unit)
+        unit (unit-by-id ai id)]
+    ;; ensure we actually know this unit
+    (when-not unit
+      (throw (Exception. (str "Unknown unit destroyed: " id))))
+
+    (dosync
+     (alter ((ai :units) :team) dissoc id)
+     (when ((unit :tags) :mex)
+       (del-mex ai (unit :pos))))))
 
 (defn start-swank []
   (let [swank-running? (atom false)]
@@ -47,7 +72,9 @@
     (def-global-ai! ai)
     (update-proxy ai-proxy
                   {"update" (event on-update)
-                   "release" (event on-release)})))
+                   "release" (event on-release)
+                   "unitCreated" (event on-unit-created)
+                   "unitDestroyed" (event on-unit-destroyed)})))
 
 (defn reset-ai! 
   ([] (reset-ai! *ai*))
