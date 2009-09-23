@@ -50,6 +50,9 @@
       (.setVisible true)
       )))
 
+(defn destroy-gui [frame]
+  (.dispose frame))
+
 ;(show-gui @clojai/*ai)
 ;(apply + (-> @clojai/*ai :grids :defence (deref)))
 ;

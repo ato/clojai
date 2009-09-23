@@ -4,8 +4,6 @@
    (com.springrts.ai.oo UnitDef))
   (:use clojure.set))
 
-(set! *warn-on-reflection* true)
-
 (defn res-by-name [#^AICallback cb name]
   (first (filter #(= name (.getName %)) (.getResources cb))))
 

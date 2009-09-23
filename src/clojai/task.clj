@@ -1,5 +1,5 @@
 (ns clojai.task
-  (:use (clojai spring command map))
+  (:use clojai (clojai spring command map unit))
   (:import (com.springrts.ai.command SendTextMessageAICommand
                                      BuildUnitAICommand
                                      MoveUnitAICommand
@@ -57,25 +57,26 @@
     ;--- Commander ---
     (-> unit :tags :commander)      
     (cond
-      (< (count (-> ai :team-units-by-tag :mex)) 2)
+      (< (count (units-by-tag ai :mex)) 2)
       {:task :build
        :unit (unit :id)
        :to-build (first (filter 
-                         (comp :mex :tags (ai :unit-table))
+                         (comp :mex :tags (ai :models))
                          (unit :build-options)))
-       :pos (closest-avail-metal-spot ai (unit :pos))}
+       ;:pos (closest-avail-metal-spot ai (unit :pos))
+       }
       
-      (< (count (-> ai :team-units-by-tag :armsolar)) 2)
+      (< (count (units-by-tag ai :armsolar)) 2)
       {:task :build
        :unit (unit :id)
        :to-build :armsolar}
       
-      (< (count (-> ai :team-units-by-tag :armllt)) 1)
+      (< (count (units-by-tag ai :armllt)) 1)
       {:task :build
        :unit (unit :id)
        :to-build :armllt}
       
-      (< (count (-> ai :team-units-by-tag :armlab)) 1)
+      (< (count (units-by-tag ai :armlab)) 1)
       {:task :build
        :unit (unit :id)
        :to-build :armlab})
@@ -84,3 +85,8 @@
     {:task :build
      :unit (unit :id)
      :to-build :armflea}))
+
+
+; (choose-task *ai* (first (units-by-tag *ai* :commander)))
+; (use 'clojure.contrib.pprint)
+; (
